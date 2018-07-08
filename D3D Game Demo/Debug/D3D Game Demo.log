@@ -1,0 +1,5 @@
+﻿  gameObject.cpp
+g:\code\红龙\d3d game demo\d3d game demo\gameobject.cpp(3): error C2511: “GameObject::GameObject(void)”:“GameObject”中没有找到重载的成员函数
+  g:\code\红龙\d3d game demo\d3d game demo\gameobject.h(6): note: 参见“GameObject”的声明
+g:\code\红龙\d3d game demo\d3d game demo\gameobject.cpp(4): error C2059: 语法错误:“{”
+g:\code\红龙\d3d game demo\d3d game demo\gameobject.cpp(4): error C2550: “GameObject::{ctor}”: 构造函数初始值设定项列表只能在构造函数定义中使用
