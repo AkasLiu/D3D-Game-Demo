@@ -24,6 +24,18 @@
     <ClInclude Include="cube.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="plane.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="boundingVolume.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dUtility.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gameFrame.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="transform.cpp">
@@ -36,6 +48,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="cube.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="plane.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="boundingVolume.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="d3dUtility.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="gameFrame.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -14,13 +14,14 @@ class Transform
 {
 public:
 	Transform(D3DXVECTOR3 p, D3DXVECTOR3 r, D3DXVECTOR3 s);
+	Transform(D3DXVECTOR3 p, D3DXVECTOR3 r);
 	Transform(D3DXVECTOR3 p);
 	Transform();
 	~Transform();
 
 public:
-	void setPostion(D3DXVECTOR3 pos);
-	D3DXVECTOR3 getPosition();
+	void setPostion(D3DXVECTOR3* pos);
+	void getPosition(D3DXVECTOR3* pos);
 	void setRotation(D3DXVECTOR3 r);
 	D3DXVECTOR3 getRotation();
 	void setScale(D3DXVECTOR3 s);
@@ -33,6 +34,9 @@ protected:
 
 private:
 	D3DXVECTOR3 clampAngle(D3DXVECTOR3 r);
-
+	//好像并没什么卵用
+	bool isIdentityPosition(D3DXVECTOR3 vec);
+	bool isIdentityRotation(D3DXVECTOR3 vec);
+	bool isIdentityScale(D3DXVECTOR3 vec);
 };
 

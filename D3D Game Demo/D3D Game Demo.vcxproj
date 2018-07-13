@@ -146,14 +146,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="boundingVolume.h" />
     <ClInclude Include="cube.h" />
+    <ClInclude Include="d3dUtility.h" />
+    <ClInclude Include="gameFrame.h" />
     <ClInclude Include="gameObject.h" />
+    <ClInclude Include="plane.h" />
     <ClInclude Include="transform.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="boundingVolume.cpp" />
     <ClCompile Include="cube.cpp" />
+    <ClCompile Include="d3dUtility.cpp" />
+    <ClCompile Include="gameFrame.cpp" />
     <ClCompile Include="gameObject.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="plane.cpp" />
     <ClCompile Include="transform.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

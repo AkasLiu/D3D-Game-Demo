@@ -2,29 +2,31 @@
 #
 
 Transform::Transform(D3DXVECTOR3 p, D3DXVECTOR3 r, D3DXVECTOR3 s) : 
-	position(p),rotation(r),scale(s)
-{
-}
+	position(p),rotation(r),scale(s){ }
+
+Transform::Transform(D3DXVECTOR3 p, D3DXVECTOR3 r) :
+	position(p), rotation(r){ }
 
 Transform::Transform(D3DXVECTOR3 p) :
-	position(p)
-{
-}
+	position(p){ }
+
+Transform::Transform()
+{ }
 
 Transform::~Transform()
+{ }
+
+void Transform::setPostion(D3DXVECTOR3* pos)
 {
+	position = *pos;
 }
 
-void Transform::setPostion(D3DXVECTOR3 pos)
+void Transform::getPosition(D3DXVECTOR3 *pos)
 {
-	position = pos;
+	*pos = position;
 }
 
-D3DXVECTOR3 Transform::getPosition()
-{
-	return position;
-}
-
+//todo
 void Transform::setRotation(D3DXVECTOR3 r)
 {
 
@@ -57,3 +59,15 @@ D3DXVECTOR3 Transform::clampAngle(D3DXVECTOR3 r)
 	D3DXVECTOR3 a;
 	return a;
 }
+
+bool Transform::isIdentityPosition(D3DXVECTOR3 vec)
+{
+	D3DXVECTOR3 normal;
+	if (normal == vec)
+	{
+		return true;
+	}
+	return false;
+}
+
+
