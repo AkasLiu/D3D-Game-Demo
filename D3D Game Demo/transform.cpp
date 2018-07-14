@@ -60,14 +60,14 @@ D3DXVECTOR3 Transform::clampAngle(D3DXVECTOR3 r)
 	return a;
 }
 
-bool Transform::isIdentityPosition(D3DXVECTOR3 vec)
-{
-	D3DXVECTOR3 normal;
-	if (normal == vec)
-	{
-		return true;
-	}
-	return false;
-}
+//bool Transform::isIdentityPosition(D3DXVECTOR3 vec)
+//{
+//	D3DXVECTOR3 normal;
+//	if (normal == vec)
+//	{
+//		return true;
+//	}
+//	return false;
+//}
 
 

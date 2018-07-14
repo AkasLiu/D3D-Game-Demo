@@ -147,22 +147,30 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="boundingVolume.h" />
+    <ClInclude Include="camera.h" />
     <ClInclude Include="cube.h" />
     <ClInclude Include="d3dUtility.h" />
+    <ClInclude Include="DirectInputClass.h" />
     <ClInclude Include="gameFrame.h" />
     <ClInclude Include="gameObject.h" />
     <ClInclude Include="plane.h" />
+    <ClInclude Include="player.h" />
     <ClInclude Include="transform.h" />
+    <ClInclude Include="vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="boundingVolume.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="cube.cpp" />
     <ClCompile Include="d3dUtility.cpp" />
+    <ClCompile Include="DirectInputClass.cpp" />
     <ClCompile Include="gameFrame.cpp" />
     <ClCompile Include="gameObject.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="plane.cpp" />
+    <ClCompile Include="player.cpp" />
     <ClCompile Include="transform.cpp" />
+    <ClCompile Include="vertex.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

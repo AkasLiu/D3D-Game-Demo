@@ -1,5 +1,6 @@
 #pragma once
 #include "transform.h"
+#include "vertex.h"
 
 class GameObject
 {
@@ -8,11 +9,13 @@ public:
 	~GameObject();
 
 public:
-	virtual void loadTexture(LPCWSTR filePath)=0;
-	virtual void loadXFile(LPCWSTR filePath) = 0;
-	virtual void setMaterial(D3DMATERIAL9 mtrl) = 0;
-	virtual void init() = 0;
-	virtual void draw() = 0;
+	void loadTexture(LPCWSTR filePath);
+	virtual void loadXFile(LPCWSTR filePath);
+	virtual void setMaterial(D3DMATERIAL9 mtrl);
+	virtual void init();
+	virtual void draw();
+
+	D3DXVECTOR3 getPosition();
 	
 protected:
 	Transform transform;

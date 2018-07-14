@@ -1,9 +1,4 @@
-﻿  gameObject.cpp
-  正在生成代码...
-  正在编译...
-  plane.cpp
-  正在生成代码...
-  正在跳过...(未检测到相关更改)
-  main.cpp
+﻿  main.cpp
+g:\code\红龙\d3d game demo\d3d game demo\main.cpp(104): warning C4244: “=”: 从“DWORD”转换到“float”，可能丢失数据
   D3D Game Demo.vcxproj -> G:\Code\红龙\D3D Game Demo\Debug\D3D Game Demo.exe
   D3D Game Demo.vcxproj -> G:\Code\红龙\D3D Game Demo\Debug\D3D Game Demo.pdb (Full PDB)

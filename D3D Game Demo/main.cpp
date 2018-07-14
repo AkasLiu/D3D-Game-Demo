@@ -1,6 +1,10 @@
 #include "d3dUtility.h"
-#include "transform.h"
 #include "gameObject.h"
+#include "vertex.h"
+#include "plane.h"
+#include "DirectInputClass.h"
+#include "camera.h"
+#include "cube.h"
 
 //-----------------------------------【宏定义部分】--------------------------------------------
 //	描述：定义一些辅助宏
@@ -21,7 +25,11 @@ LPDIRECT3DDEVICE9					g_pd3dDevice = NULL; //Direct3D设备对象
 ID3DXFont*								g_pFont = NULL;    //字体COM接口
 float											g_FPS = 0.0f;       //一个浮点型的变量，代表帧速率
 wchar_t										g_strFPS[50];    //包含帧速率的字符数组
-
+const DWORD Vertex::FVF = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1;
+Plane*								floorPlane;
+DInputClass*								g_pDInput = NULL;         //一个DInputClass类的指针
+Cube*								cube;
+Camera TheCamera(Camera::LANDOBJECT);
 
 //-----------------------------------【全局函数声明部分】----------------------------------------
 //	描述：全局函数声明，防止“未声明的标识”系列错误
@@ -31,6 +39,7 @@ HRESULT					Direct3D_Init(HWND hwnd);		 //在这个函数中进行Direct3D的初始化
 HRESULT					Objects_Init(HWND hwnd); 		//在这个函数中进行要绘制的物体的资源初始化
 VOID							Direct3D_Render(HWND hwnd); 	//在这个函数中进行Direct3D渲染代码的书写
 VOID							Direct3D_CleanUp();				//在这个函数中清理COM资源以及其他资源
+void								Direct3D_Update(HWND hwnd,float deltaTime);
 
 //-----------------------------------【WinMain( )函数】------------------------------------------
 //	描述：Windows应用程序的入口函数，我们的程序从这里开始
@@ -71,10 +80,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ShowWindow(hwnd, nShowCmd);    //调用ShowWindow函数来显示窗口
 	UpdateWindow(hwnd);						//对窗口进行更新，就像我们买了新房子要装修一样
 
-
-
 	//PlaySound(L"War3XMainScreen.wav", NULL, SND_FILENAME | SND_ASYNC | SND_LOOP); //循环播放背景音乐 
-	MessageBox(hwnd, L"DirectX，等着瞧吧，我们来降服你了~!", L"浅墨的消息窗口", 0); //使用MessageBox函数，显示一个消息窗口
+	//MessageBox(hwnd, L"DirectX，等着瞧吧，我们来降服你了~!", L"浅墨的消息窗口", 0); //使用MessageBox函数，显示一个消息窗口
+
+	//进行DirectInput类的初始化
+	g_pDInput = new DInputClass();
+	g_pDInput->Init(hwnd, hInstance, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 
 	//【5】消息循环过程
 	MSG msg = { 0 };  //初始化msg
@@ -87,12 +98,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 		else
 		{
+			static float  currentTime = 0.0f;//当前时间
+			static float  lastTime = 0.0f;//持续时间
+			static float deltaTime = 0.0f;//时间间隔
+			currentTime = timeGetTime();
+			deltaTime = (currentTime - lastTime)*0.001f;
+			lastTime = currentTime;
+
+			Direct3D_Update(hwnd,deltaTime);
 			Direct3D_Render(hwnd);   //进行渲染
 		}
 	}
 
 	//【6】窗口类的注销
-	UnregisterClass(L"ForTheDreamOfGameDevelop", wndClass.hInstance);  //程序准备结束，注销窗口类
+	UnregisterClass(L"D3DGame", wndClass.hInstance);  //程序准备结束，注销窗口类
 	return 0;
 }
 
@@ -189,16 +208,138 @@ HRESULT Direct3D_Init(HWND hwnd)
 //--------------------------------------------------------------------------------------------------
 HRESULT Objects_Init(HWND hwnd)
 {
+	//
+	//初始化Plane
+	//
+	//D3DXVECTOR3 floorPostion = { 0,0,0 };
+	//floorPlane = new Plane(100, 100, floorPostion, g_pd3dDevice);
+	//floorPlane->loadTexture(L"Texture\\desert.bmp");
+	////floorPlane->loadTexture(L"desert.bmp");
+	//floorPlane->init();
+
+	//
+	//绘制cube
+	//
+	Transform tf;
+	//tf.scale = D3DXVECTOR3{ 100,10,10 };
+	cube = new Cube(tf, g_pd3dDevice);
+	/*D3DXVECTOR3 pos = { 0,0,0 };
+	cube = new Cube(pos, g_pd3dDevice);*/
+	cube->init();
+	//TheCamera.SetTargetPosition(&cube->getPosition());
+	//
+	//创建一个摄像机跟随的物体，暂时用cube代替
+	//
+	/*D3DXVECTOR3 size = { 10,10,10 };
+	D3DXVECTOR3 cubePos = { 0,0,30 };
+	cubeTest = new Cube(cubePos, size, cubeMesh, Device);
+	cubeTest->InitCube();
+	TheCamera.SetTargetPosition(&cubePos);*/
+
+	//
+	// 设置投影矩阵
+	//
+	D3DXMATRIX proj;
+	D3DXMatrixPerspectiveFovLH(
+		&proj,
+		D3DX_PI * 0.5f, // 90 - degree
+		(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT,
+		1.0f,
+		1000.0f);
+	g_pd3dDevice->SetTransform(D3DTS_PROJECTION, &proj);
+
+
 	return S_OK;
 }
 
+//-----------------------------------【Direct3D_Update( )函数】--------------------------------
+//	描述：不是即时渲染代码但是需要即时调用的，如按键后的坐标的更改，都放在这里
+//--------------------------------------------------------------------------------------------------
+void Direct3D_Update(HWND hwnd,float deltaTime)
+{
+	//使用DirectInput类读取数据
+	g_pDInput->GetInput();
+
+	// 沿摄像机各分量移动视角
+	if (g_pDInput->IsKeyDown(DIK_A))  TheCamera.strafe(-10.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_D))  TheCamera.strafe(10.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_W))  TheCamera.walk(10.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_S))  TheCamera.walk(-10.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_R))  TheCamera.fly(10.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_F))  TheCamera.fly(-10.0f*deltaTime);
+
+	//沿摄像机各分量旋转视角
+	if (g_pDInput->IsKeyDown(DIK_LEFT))   TheCamera.yaw(-1.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_RIGHT))  TheCamera.yaw(1.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_UP))     TheCamera.pitch(1.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_DOWN))   TheCamera.pitch(-1.0f*deltaTime);
+		/*if (g_pDInput->IsKeyDown(DIK_Q)) TheCamera->RotationLookVec(0.001f);
+		if (g_pDInput->IsKeyDown(DIK_E)) TheCamera->RotationLookVec(-0.001f);*/
+
+	D3DXMATRIX V;
+	TheCamera.getViewMatrix(&V);
+	g_pd3dDevice->SetTransform(D3DTS_VIEW, &V);
+
+	//鼠标控制右向量和上向量的旋转
+	//TheCamera->RotationUpVec(g_pDInput->MouseDX()* 0.001f);
+	//TheCamera->RotationRightVec(g_pDInput->MouseDY() * 0.001f);
+
+	////鼠标滚轮控制观察点收缩操作
+	//static FLOAT fPosZ = 0.0f;
+	//fPosZ += g_pDInput->MouseDZ()*0.03f;
+
+	////计算并设置取景变换矩阵
+	//D3DXMATRIX matView;
+	//TheCamera->CalculateViewMatrix(&matView);
+	//g_pd3dDevice->SetTransform(D3DTS_VIEW, &matView);
+
+	////把正确的世界变换矩阵存到g_matWorld中
+	//D3DXMatrixTranslation(&g_matWorld, 0.0f, 0.0f, fPosZ);
+
+	////以下这段代码用于限制鼠标光标移动区域
+	//POINT lt, rb;
+	//RECT rect;
+	//GetClientRect(hwnd, &rect);  //取得窗口内部矩形
+	//							 //将矩形左上点坐标存入lt中
+	//lt.x = rect.left;
+	//lt.y = rect.top;
+	////将矩形右下坐标存入rb中
+	//rb.x = rect.right;
+	//rb.y = rect.bottom;
+	////将lt和rb的窗口坐标转换为屏幕坐标
+	//ClientToScreen(hwnd, &lt);
+	//ClientToScreen(hwnd, &rb);
+	////以屏幕坐标重新设定矩形区域
+	//rect.left = lt.x;
+	//rect.top = lt.y;
+	//rect.right = rb.x;
+	//rect.bottom = rb.y;
+	////限制鼠标光标移动区域
+	//ClipCursor(&rect);
+
+	//ShowCursor(false);		//隐藏鼠标光标
+}
 
 //-----------------------------------【Direct3D_Render( )函数】--------------------------------------
 //	描述：使用Direct3D进行渲染
 //--------------------------------------------------------------------------------------------------
 void Direct3D_Render(HWND hwnd)
 {
-	//暂时为空，且听下回分解
+	g_pd3dDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0xffffffff, 1.0f, 0);
+	g_pd3dDevice->BeginScene();
+
+	//
+	//绘制地面
+	//
+	//floorPlane->draw();
+
+	//
+	//
+	//
+	cube->draw();
+
+	g_pd3dDevice->EndScene();
+	g_pd3dDevice->Present(0, 0, 0, 0);
 }
 
 
