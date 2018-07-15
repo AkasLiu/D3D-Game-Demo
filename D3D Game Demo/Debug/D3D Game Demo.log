@@ -1,4 +1,3 @@
-﻿  main.cpp
-g:\code\红龙\d3d game demo\d3d game demo\main.cpp(104): warning C4244: “=”: 从“DWORD”转换到“float”，可能丢失数据
+﻿  cube.cpp
   D3D Game Demo.vcxproj -> G:\Code\红龙\D3D Game Demo\Debug\D3D Game Demo.exe
   D3D Game Demo.vcxproj -> G:\Code\红龙\D3D Game Demo\Debug\D3D Game Demo.pdb (Full PDB)

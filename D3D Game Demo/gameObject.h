@@ -24,8 +24,6 @@ protected:
 	D3DMATERIAL9 material;
 	LPD3DXMESH pMesh = 0;
 
-
-	//todo
 	void initWorldTransform();
 };
 

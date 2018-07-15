@@ -151,10 +151,12 @@
     <ClInclude Include="cube.h" />
     <ClInclude Include="d3dUtility.h" />
     <ClInclude Include="DirectInputClass.h" />
+    <ClInclude Include="font.h" />
     <ClInclude Include="gameFrame.h" />
     <ClInclude Include="gameObject.h" />
     <ClInclude Include="plane.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="skyBox.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="vertex.h" />
   </ItemGroup>
@@ -164,11 +166,13 @@
     <ClCompile Include="cube.cpp" />
     <ClCompile Include="d3dUtility.cpp" />
     <ClCompile Include="DirectInputClass.cpp" />
+    <ClCompile Include="font.cpp" />
     <ClCompile Include="gameFrame.cpp" />
     <ClCompile Include="gameObject.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="plane.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="skyBox.cpp" />
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="vertex.cpp" />
   </ItemGroup>

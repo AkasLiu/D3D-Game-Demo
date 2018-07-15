@@ -7,9 +7,9 @@ public:
 	Plane(D3DXVECTOR3 position,LPDIRECT3DDEVICE9 pDevice);
 	Plane(float l, float w,D3DXVECTOR3 position, LPDIRECT3DDEVICE9 pDevice);
 	~Plane();
+
 	void init();
 	void draw();
-	void setMaterial();
 
 private:
 	float length = 1.0f;

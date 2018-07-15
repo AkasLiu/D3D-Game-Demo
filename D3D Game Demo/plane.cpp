@@ -1,6 +1,5 @@
 #include "plane.h"
 
-
 inline Plane::Plane(D3DXVECTOR3 position, LPDIRECT3DDEVICE9 pDevice) :
 	GameObject(Transform(position), pDevice)
 {
@@ -67,7 +66,11 @@ void Plane::draw()
 	pDevice->SetTexture(0, 0);
 }
 
-void Plane::setMaterial()
-{
-	pDevice->SetMaterial(&d3d::YELLOW_MTRL);
-}
+//void Plane::loadTexture(LPCWSTR filePath)
+//{
+//	HRESULT hr = D3DXCreateTextureFromFile(pDevice, filePath, &pTexture);
+//	if (FAILED(hr))
+//	{
+//		::MessageBox(0, L"gameObjectTexture - FAILED", 0, 0);
+//	}
+//}

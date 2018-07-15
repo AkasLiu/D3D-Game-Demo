@@ -5,6 +5,8 @@
 #include "DirectInputClass.h"
 #include "camera.h"
 #include "cube.h"
+#include "font.h"
+#include "skyBox.h"
 
 //-----------------------------------【宏定义部分】--------------------------------------------
 //	描述：定义一些辅助宏
@@ -21,15 +23,18 @@
 //-----------------------------------【全局变量声明部分】-------------------------------------
 //	描述：全局变量的声明
 //------------------------------------------------------------------------------------------------
-LPDIRECT3DDEVICE9					g_pd3dDevice = NULL; //Direct3D设备对象
 ID3DXFont*								g_pFont = NULL;    //字体COM接口
 float											g_FPS = 0.0f;       //一个浮点型的变量，代表帧速率
 wchar_t										g_strFPS[50];    //包含帧速率的字符数组
-const DWORD Vertex::FVF = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1;
-Plane*								floorPlane;
-DInputClass*								g_pDInput = NULL;         //一个DInputClass类的指针
-Cube*								cube;
+
+LPDIRECT3DDEVICE9							g_pd3dDevice = NULL;		//Direct3D设备对象
+Plane*										floorPlane;					//地面
+DInputClass*								g_pDInput = NULL;			//一个DInputClass类的指针
+Cube*										cube[4];					//边界的围墙
+SkyBox*										skyBox;
+Font*										blackFont;
 Camera TheCamera(Camera::LANDOBJECT);
+const DWORD Vertex::FVF = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1;
 
 //-----------------------------------【全局函数声明部分】----------------------------------------
 //	描述：全局函数声明，防止“未声明的标识”系列错误
@@ -209,24 +214,70 @@ HRESULT Direct3D_Init(HWND hwnd)
 HRESULT Objects_Init(HWND hwnd)
 {
 	//
-	//初始化Plane
+	//创建字体
 	//
-	//D3DXVECTOR3 floorPostion = { 0,0,0 };
-	//floorPlane = new Plane(100, 100, floorPostion, g_pd3dDevice);
-	//floorPlane->loadTexture(L"Texture\\desert.bmp");
-	////floorPlane->loadTexture(L"desert.bmp");
-	//floorPlane->init();
+	blackFont = new Font(36, g_pd3dDevice, hwnd);
+	blackFont->createFont();
 
 	//
-	//绘制cube
+	//设置光照
 	//
-	Transform tf;
-	//tf.scale = D3DXVECTOR3{ 100,10,10 };
-	cube = new Cube(tf, g_pd3dDevice);
-	/*D3DXVECTOR3 pos = { 0,0,0 };
-	cube = new Cube(pos, g_pd3dDevice);*/
-	cube->init();
+	D3DXVECTOR3 lightPos(0.0f, 30.0f, 0.0f);
+	D3DXCOLOR col(1.0f, 1.0f, 1.0f, 1.0f);
+	D3DLIGHT9 light = d3d::InitPointLight(&lightPos, &col);
+
+	g_pd3dDevice->SetLight(0, &light);
+	g_pd3dDevice->LightEnable(0, true);
+	g_pd3dDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+	g_pd3dDevice->SetRenderState(D3DRS_SPECULARENABLE, true);
+
+	//
+	//创建天空
+	//
+	skyBox = new SkyBox(g_pd3dDevice);
+	skyBox->LoadSkyTextureFromFile(L"Texture\\SkyBox\\frontsnow1.jpg", L"Texture\\SkyBox\\backsnow1.jpg", L"Texture\\SkyBox\\leftsnow1.jpg", L"Texture\\SkyBox\\rightsnow1.jpg", L"Texture\\SkyBox\\topsnow1.jpg");//从文件加载前、后、左、右、顶面5个面的纹理图
+	skyBox->InitSkyBox(1000);  //设置天空盒的边长
+
+	//
+	//初始化地面
+	//
+	D3DXVECTOR3 floorPostion = { 0,0,0 };
+	floorPlane = new Plane(500, 500, floorPostion, g_pd3dDevice);
+	floorPlane->loadTexture(L"Texture\\desert.bmp");
+	floorPlane->init();
+
+	//
+	//初始化cube构造四个边界的柱子
+	//
+	/*----初始化cube的位置---*/
+	D3DXVECTOR3 cubePos[4];
+	D3DXVECTOR3 cubeSize[4];
+	cubePos[0] = D3DXVECTOR3{0,50,275};
+	cubeSize[0] = D3DXVECTOR3{ 500,100,50 };
+	cubePos[1] = D3DXVECTOR3{ 0,50,-275 };
+	cubeSize[1] = D3DXVECTOR3{ 500,100,50 };
+	cubePos[2] = D3DXVECTOR3{ 275,50,0 };
+	cubeSize[2] = D3DXVECTOR3{ 50,100,500 };
+	cubePos[3] = D3DXVECTOR3{ -275,50,0 };
+	cubeSize[3] = D3DXVECTOR3{ 50,100,500 };
+
+	for (int i = 0; i < 4; ++i)
+	{		
+		cube[i] = new Cube(cubePos[i], cubeSize[i], g_pd3dDevice);
+		cube[i]->setMaterial(d3d::GRAY_MTRL);
+		cube[i]->init();
+	}
 	//TheCamera.SetTargetPosition(&cube->getPosition());
+
+	//
+	//Test cube
+	//
+	/*D3DXVECTOR3 cubepos = { 0,0,0 };
+	D3DXVECTOR3 szie = { 100,100,100 };
+	cube[0] = new Cube(cubepos, szie, g_pd3dDevice);
+	cube[0]->setMaterial(d3d::GRAY_MTRL);
+	cube[0]->init();*/
+
 	//
 	//创建一个摄像机跟随的物体，暂时用cube代替
 	//
@@ -235,6 +286,8 @@ HRESULT Objects_Init(HWND hwnd)
 	cubeTest = new Cube(cubePos, size, cubeMesh, Device);
 	cubeTest->InitCube();
 	TheCamera.SetTargetPosition(&cubePos);*/
+
+	
 
 	//
 	// 设置投影矩阵
@@ -261,10 +314,10 @@ void Direct3D_Update(HWND hwnd,float deltaTime)
 	g_pDInput->GetInput();
 
 	// 沿摄像机各分量移动视角
-	if (g_pDInput->IsKeyDown(DIK_A))  TheCamera.strafe(-10.0f*deltaTime);
-	if (g_pDInput->IsKeyDown(DIK_D))  TheCamera.strafe(10.0f*deltaTime);
-	if (g_pDInput->IsKeyDown(DIK_W))  TheCamera.walk(10.0f*deltaTime);
-	if (g_pDInput->IsKeyDown(DIK_S))  TheCamera.walk(-10.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_A))  TheCamera.strafe(-200.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_D))  TheCamera.strafe(200.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_W))  TheCamera.walk(200.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_S))  TheCamera.walk(-200.0f*deltaTime);
 	if (g_pDInput->IsKeyDown(DIK_R))  TheCamera.fly(10.0f*deltaTime);
 	if (g_pDInput->IsKeyDown(DIK_F))  TheCamera.fly(-10.0f*deltaTime);
 
@@ -329,14 +382,40 @@ void Direct3D_Render(HWND hwnd)
 	g_pd3dDevice->BeginScene();
 
 	//
-	//绘制地面
+	//绘制字体，用于测试
 	//
-	//floorPlane->draw();
+	D3DXVECTOR3 cameraPos;
+	TheCamera.getCameraPosition(&cameraPos);
+	static wchar_t strInfo[256] = { 0 };
+	swprintf_s(strInfo, -1, L"摄像机坐标: (%.2f, %.2f, %.2f)", cameraPos.x, cameraPos.y, cameraPos.z);
+	blackFont->drawText(50, 0, strInfo, d3d::BLACK);
 
 	//
+	//绘制天空
 	//
+	D3DXMATRIX matSky, matTransSky, matRotSky;
+	D3DXMatrixTranslation(&matTransSky, 0.0f, 0.0f, 0.0f);
+	D3DXMatrixRotationY(&matRotSky, -0.000005f*timeGetTime());   //旋转天空网格, 简单模拟云彩运动效果
+	matSky = matTransSky*matRotSky;
+	skyBox->RenderSkyBox(&matSky, false);
+
 	//
-	cube->draw();
+	//绘制地面
+	//
+	floorPlane->draw();
+
+	//
+	//绘制边界
+	//
+	for (int i = 0; i < 4; ++i)
+	{
+		cube[i]->draw();
+	}
+
+	//
+	//测试
+	//
+	//cube[0]->draw();
 
 	g_pd3dDevice->EndScene();
 	g_pd3dDevice->Present(0, 0, 0, 0);
@@ -348,5 +427,6 @@ void Direct3D_Render(HWND hwnd)
 //---------------------------------------------------------------------------------------------------
 void Direct3D_CleanUp()
 {
+	d3d::Delete<Plane*>(floorPlane);
 	d3d::Release<LPDIRECT3DDEVICE9>(g_pd3dDevice);
 }

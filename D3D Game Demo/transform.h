@@ -24,29 +24,9 @@ struct Transform
 
 	D3DXVECTOR3 position = { 0.0f,0.0f,0.0f };
 	D3DXVECTOR3 rotation = { 0.0f,0.0f,0.0f };
-	D3DXVECTOR3 scale = { 10.0f,10.0f,10.0f };
+	D3DXVECTOR3 scale = { 1.0f,1.0f,1.0f };
 
 private:
 	D3DXVECTOR3 clampAngle(D3DXVECTOR3 r);
 
 };
-
-//class Transform
-//{
-//public:
-//	
-//
-//public:
-//	
-//
-//public:
-//	
-//
-//private:
-//	
-//	//好像并没什么卵用
-//	bool isIdentityPosition(D3DXVECTOR3 vec);
-//	bool isIdentityRotation(D3DXVECTOR3 vec);
-//	bool isIdentityScale(D3DXVECTOR3 vec);
-//};
-
