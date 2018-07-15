@@ -16,36 +16,41 @@ Transform::Transform()
 Transform::~Transform()
 { }
 
-void Transform::setPostion(D3DXVECTOR3* pos)
-{
-	position = *pos;
-}
-
-void Transform::getPosition(D3DXVECTOR3 *pos)
-{
-	*pos = position;
-}
-
-//todo
-void Transform::setRotation(D3DXVECTOR3 r)
-{
-
-}
-
-D3DXVECTOR3 Transform::getRotation()
-{
-	return rotation;
-}
-
-void Transform::setScale(D3DXVECTOR3 s)
-{
-	scale = s;
-}
-
-D3DXVECTOR3 Transform::getScale()
-{
-	return scale;
-}
+//void Transform::setPostion(D3DXVECTOR3* pos)
+//{
+//	position = *pos;
+//}
+//
+//D3DXVECTOR3 Transform::getPosition()
+//{
+//	return position;
+//}
+//
+////void Transform::getPosition(D3DXVECTOR3 *pos)
+////{
+////	*pos = position;
+////}
+//
+////todo
+//void Transform::setRotation(D3DXVECTOR3 r)
+//{
+//
+//}
+//
+//D3DXVECTOR3 Transform::getRotation()
+//{
+//	return rotation;
+//}
+//
+//void Transform::setScale(D3DXVECTOR3 s)
+//{
+//	scale = s;
+//}
+//
+//D3DXVECTOR3 Transform::getScale()
+//{
+//	return scale;
+//}
 
 //todo
 //将rotation向量的各个分量限制在0~360之间

@@ -1,5 +1,6 @@
 #pragma once
 #include <d3dx9.h>
+#include "character.h"
 
 class Camera
 {
@@ -10,9 +11,9 @@ public:
 	Camera(CameraType cameraType);
 	~Camera();
 
-	void strafe(float units); // left/right
+	//void strafe(float units); // left/right
 	void fly(float units);    // up/down
-	void walk(float units);   // forward/backward
+	//void walk(float units);   // forward/backward
 
 	void pitch(float angle); // rotate on right vector
 	void yaw(float angle);   // rotate on up vector
@@ -29,7 +30,10 @@ public:
 
 	void SetTargetPosition(D3DXVECTOR3 *pLookat = NULL);  //设置摄像机的目标观察位置向量
 
-	void ThirdPersonRotationX(float angle);//第三人称摄像头绕右分量向量旋转
+	void ThirdPersonRotationX(float angle);
+	void walk(float units, Character* player = nullptr);
+	void strafe(float units, Character * player = nullptr);
+	//第三人称摄像头绕右分量向量旋转
 	void ThirdPersonRotationY(float angle);//第三人称摄像头绕上分量向量旋转
 
 private:

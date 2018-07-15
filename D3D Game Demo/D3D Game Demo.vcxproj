@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="boundingVolume.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="character.h" />
     <ClInclude Include="cube.h" />
     <ClInclude Include="d3dUtility.h" />
     <ClInclude Include="DirectInputClass.h" />
@@ -163,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="boundingVolume.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="character.cpp" />
     <ClCompile Include="cube.cpp" />
     <ClCompile Include="d3dUtility.cpp" />
     <ClCompile Include="DirectInputClass.cpp" />

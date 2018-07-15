@@ -7,6 +7,7 @@
 #include "cube.h"
 #include "font.h"
 #include "skyBox.h"
+#include "character.h"
 
 //-----------------------------------【宏定义部分】--------------------------------------------
 //	描述：定义一些辅助宏
@@ -33,6 +34,7 @@ DInputClass*								g_pDInput = NULL;			//一个DInputClass类的指针
 Cube*										cube[4];					//边界的围墙
 SkyBox*										skyBox;
 Font*										blackFont;
+Character*									player;
 Camera TheCamera(Camera::LANDOBJECT);
 const DWORD Vertex::FVF = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1;
 
@@ -106,7 +108,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			static float  currentTime = 0.0f;//当前时间
 			static float  lastTime = 0.0f;//持续时间
 			static float deltaTime = 0.0f;//时间间隔
-			currentTime = timeGetTime();
+			currentTime = (float)timeGetTime();
 			deltaTime = (currentTime - lastTime)*0.001f;
 			lastTime = currentTime;
 
@@ -279,6 +281,16 @@ HRESULT Objects_Init(HWND hwnd)
 	cube[0]->init();*/
 
 	//
+	//载入X文件，作为主角
+	//
+	Transform playerTransform;
+	playerTransform.position = { 0,80,0 };
+	playerTransform.scale = { 0.1f,0.1f,0.1f };
+	player = new Character(playerTransform,g_pd3dDevice);
+	player->loadXFile(L"XFile\\Player\\miki.X");
+	player->init();
+
+	//
 	//创建一个摄像机跟随的物体，暂时用cube代替
 	//
 	/*D3DXVECTOR3 size = { 10,10,10 };
@@ -314,10 +326,10 @@ void Direct3D_Update(HWND hwnd,float deltaTime)
 	g_pDInput->GetInput();
 
 	// 沿摄像机各分量移动视角
-	if (g_pDInput->IsKeyDown(DIK_A))  TheCamera.strafe(-200.0f*deltaTime);
-	if (g_pDInput->IsKeyDown(DIK_D))  TheCamera.strafe(200.0f*deltaTime);
-	if (g_pDInput->IsKeyDown(DIK_W))  TheCamera.walk(200.0f*deltaTime);
-	if (g_pDInput->IsKeyDown(DIK_S))  TheCamera.walk(-200.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_A))  TheCamera.strafe(-200.0f*deltaTime,player);
+	if (g_pDInput->IsKeyDown(DIK_D))  TheCamera.strafe(200.0f*deltaTime,player);
+	if (g_pDInput->IsKeyDown(DIK_W))  TheCamera.walk(200.0f*deltaTime,player);
+	if (g_pDInput->IsKeyDown(DIK_S))  TheCamera.walk(-200.0f*deltaTime,player);
 	if (g_pDInput->IsKeyDown(DIK_R))  TheCamera.fly(10.0f*deltaTime);
 	if (g_pDInput->IsKeyDown(DIK_F))  TheCamera.fly(-10.0f*deltaTime);
 
@@ -328,6 +340,16 @@ void Direct3D_Update(HWND hwnd,float deltaTime)
 	if (g_pDInput->IsKeyDown(DIK_DOWN))   TheCamera.pitch(-1.0f*deltaTime);
 		/*if (g_pDInput->IsKeyDown(DIK_Q)) TheCamera->RotationLookVec(0.001f);
 		if (g_pDInput->IsKeyDown(DIK_E)) TheCamera->RotationLookVec(-0.001f);*/
+
+	//自己加一个键
+	if (g_pDInput->IsKeyDown(DIK_I))
+	{
+		/*Transform playerTf;
+		playerTf = player->getTransform();
+		playerTf.position += {0,0,10};
+		player->setTransform(&playerTf);*/
+		//MessageBox(hwnd, _T("失败~！"), _T("浅墨的消息窗口"), 0); //使用MessageBox函数，创建一个消息窗口 
+	}
 
 	D3DXMATRIX V;
 	TheCamera.getViewMatrix(&V);
@@ -387,7 +409,7 @@ void Direct3D_Render(HWND hwnd)
 	D3DXVECTOR3 cameraPos;
 	TheCamera.getCameraPosition(&cameraPos);
 	static wchar_t strInfo[256] = { 0 };
-	swprintf_s(strInfo, -1, L"摄像机坐标: (%.2f, %.2f, %.2f)", cameraPos.x, cameraPos.y, cameraPos.z);
+	swprintf_s(strInfo, -1, L"摄像机坐标: (%.2f, %.2f, %.2f)", player->getTransform()->position.x, player->getTransform()->position.y, player->getTransform()->position.z);
 	blackFont->drawText(50, 0, strInfo, d3d::BLACK);
 
 	//
@@ -413,6 +435,11 @@ void Direct3D_Render(HWND hwnd)
 	}
 
 	//
+	//绘制主角
+	//
+	player->draw();
+
+	//
 	//测试
 	//
 	//cube[0]->draw();
@@ -427,6 +454,13 @@ void Direct3D_Render(HWND hwnd)
 //---------------------------------------------------------------------------------------------------
 void Direct3D_CleanUp()
 {
+	d3d::Delete<Character*>(player);
+	for (int i = 0; i < 4; ++i)
+	{
+		d3d::Delete<Cube*>(cube[i]);
+	}
 	d3d::Delete<Plane*>(floorPlane);
+	d3d::Delete<SkyBox*>(skyBox);
+	d3d::Delete<Font*>(blackFont);
 	d3d::Release<LPDIRECT3DDEVICE9>(g_pd3dDevice);
 }

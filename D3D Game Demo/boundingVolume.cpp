@@ -12,6 +12,10 @@ BoundingBox::BoundingBox()
 	_max.z = -INFINITY;
 }
 
+BoundingBox::~BoundingBox()
+{
+}
+
 bool BoundingBox::isPointInside(D3DXVECTOR3 & p)
 {
 	if (p.x >= _min.x && p.y >= _min.y && p.z >= _min.z &&
@@ -40,4 +44,42 @@ bool BoundingBox::isCollided(BoundingBox collision)
 	{
 		return false;
 	}
+}
+//计算出该物体的外接体
+bool BoundingBox::ComputeBoundingBox(ID3DXMesh * XFileMesh)
+{
+	HRESULT hr = 0;
+
+	BYTE* v = 0;
+	XFileMesh->LockVertexBuffer(0, (void**)&v);
+
+	hr = D3DXComputeBoundingBox(
+		(D3DXVECTOR3*)v,
+		XFileMesh->GetNumVertices(),
+		D3DXGetFVFVertexSize(XFileMesh->GetFVF()),
+		&this->_min,
+		&this->_max);
+
+	XFileMesh->UnlockVertexBuffer();
+
+	if (FAILED(hr))
+		return false;
+
+	return true;
+}
+
+void BoundingBox::initBoudingBox(LPDIRECT3DDEVICE9 pDevice)
+{
+	D3DXCreateBox(
+		pDevice,
+		this->_max.x - this->_min.x,
+		this->_max.y - this->_min.y,
+		this->_max.z - this->_min.z,
+		&pBoxMesh,
+		0);
+}
+
+LPD3DXMESH BoundingBox::getBoxMesh()
+{
+	return pBoxMesh;
 }

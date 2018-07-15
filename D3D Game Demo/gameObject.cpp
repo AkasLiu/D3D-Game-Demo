@@ -8,6 +8,7 @@ GameObject::~GameObject()
 	//todo 释放device 应该不用？
 	d3d::Release<LPDIRECT3DTEXTURE9>(pTexture);
 	d3d::Release<LPD3DXMESH>(pMesh);
+	d3d::Release<LPDIRECT3DDEVICE9>(pDevice);
 }
 
 void GameObject::loadTexture(LPCWSTR filePath)
@@ -19,27 +20,93 @@ void GameObject::loadTexture(LPCWSTR filePath)
 	}
 }
 
-void GameObject::loadXFile(LPCWSTR filePath)
+bool GameObject::loadXFile(LPCWSTR filePath)
 {
+	LPD3DXBUFFER mtrlBuffer = 0;
+
+	HRESULT hr = D3DXLoadMeshFromX(
+		filePath,
+		D3DXMESH_MANAGED,
+		pDevice,
+		&ppAdjacency,
+		&mtrlBuffer,
+		0,
+		&numMaterials,
+		&pMesh
+	);
+
+	if (FAILED(hr))
+	{
+		::MessageBox(0, L"XFileLoad - FAILED", 0, 0);
+		return false;
+	}
+
+	if (mtrlBuffer != 0 && numMaterials != 0)
+	{
+		D3DXMATERIAL *materials = (D3DXMATERIAL*)mtrlBuffer->GetBufferPointer();
+
+		for (unsigned int i = 0; i < numMaterials; i++)
+		{
+			materials[i].MatD3D.Ambient = materials[i].MatD3D.Diffuse;
+			Mtrls.push_back(materials[i].MatD3D);
+
+			if (materials[i].pTextureFilename != 0)
+			{
+				LPDIRECT3DTEXTURE9 tex = 0;
+				//LPCWSTR textureFilePath = materials[i].pTextureFilename;
+
+				//路径问题暂时无法解决
+				D3DXCreateTextureFromFileA(
+					pDevice,
+					materials[i].pTextureFilename,
+					&tex);
+
+				Textures.push_back(tex);
+			}
+			else
+			{
+				Textures.push_back(nullptr);
+			}
+		}
+	}
+
+	d3d::Release<LPD3DXBUFFER>(mtrlBuffer);
+
+	return true;
 }
 
 void GameObject::setMaterial(D3DMATERIAL9 mtrl)
 {
-	pDevice->SetMaterial(&d3d::WHITE_MTRL);
+	material = mtrl;
 }
 
 void GameObject::init()
 {
 }
 
-void GameObject::draw()
+Transform* GameObject::getTransform()
 {
+	return &transform;
 }
 
-D3DXVECTOR3 GameObject::getPosition()
+void GameObject::setTransform(Transform * tf)
 {
-	return transform.position;
+	transform = *tf;
 }
+
+BoundingBox* GameObject::getBoundingBox()
+{
+	return &boundingBox;
+}
+
+//void GameObject::draw()
+//{
+//}
+
+//D3DXVECTOR3 GameObject::getPosition()
+//{
+//	return transform.position;
+//}
 
 //
 //设置世界变换

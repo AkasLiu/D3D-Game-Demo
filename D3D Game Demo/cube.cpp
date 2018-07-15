@@ -28,15 +28,17 @@ void Cube::init()
 
 void Cube::draw()
 {
-	//pDevice->SetRenderState(D3DRS_LIGHTING, false);
-	//pDevice->SetRenderState(D3DRS_LIGHTING, true);
+	pDevice->SetMaterial(&material);
+
 	initWorldTransform();
 	pMesh->DrawSubset(0);
+
+	pDevice->SetMaterial(&d3d::WHITE_MTRL);
 }
 
-void Cube::setMaterial(D3DMATERIAL9 mtrl)
-{
-	pDevice->SetMaterial(&mtrl);
-}
+//void Cube::setMaterial(D3DMATERIAL9 mtrl)
+//{
+//	material = mtrl;
+//}
 
 

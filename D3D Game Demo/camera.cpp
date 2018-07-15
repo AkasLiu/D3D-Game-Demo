@@ -15,7 +15,7 @@ Camera::Camera(CameraType cameraType)
 {
 	_cameraType = cameraType;
 
-	_cameraPosition = D3DXVECTOR3(0.0f, 10.0f, -50.0f);
+	_cameraPosition = D3DXVECTOR3(0.0f, 13.0f, -30.0f);
 	_targetPosition = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	_right = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
 	_up = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
@@ -111,21 +111,39 @@ void Camera::ThirdPersonRotationX(float angle)
 	_cameraPosition = _targetPosition + vNewEye;
 }
 
-void Camera::walk(float units)
+void Camera::walk(float units, Character* player)
 {
 	// move only on xz plane for land object
 	if (_cameraType == LANDOBJECT)
+	{
 		_cameraPosition += D3DXVECTOR3(_look.x, 0.0f, _look.z) * units;
+		if (player != nullptr)
+		{
+			static D3DXVECTOR3 playerPosition;
+			playerPosition = player->getTransform()->position;
+			playerPosition += D3DXVECTOR3(_look.x, 0.0f, _look.z) * units*10;
+			player->getTransform()->position = playerPosition;
+		}
+	}
 
 	if (_cameraType == AIRCRAFT)
 		_cameraPosition += _look * units;
 }
 
-void Camera::strafe(float units)
+void Camera::strafe(float units, Character* player)
 {
 	// move only on xz plane for land object
 	if (_cameraType == LANDOBJECT)
+	{
 		_cameraPosition += D3DXVECTOR3(_right.x, 0.0f, _right.z) * units;
+		if (player != nullptr)
+		{
+			static D3DXVECTOR3 playerPosition;
+			playerPosition = player->getTransform()->position;
+			playerPosition += D3DXVECTOR3(_right.x, 0.0f, _right.z) * units*10;
+			player->getTransform()->position = playerPosition;
+		}
+	}
 
 	if (_cameraType == AIRCRAFT)
 		_cameraPosition += _right * units;

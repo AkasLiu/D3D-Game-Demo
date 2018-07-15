@@ -15,12 +15,12 @@ struct Transform
 	Transform();
 	~Transform();
 
-	void setPostion(D3DXVECTOR3* pos);
-	void getPosition(D3DXVECTOR3* pos);
+	/*void setPostion(D3DXVECTOR3* pos);
+	D3DXVECTOR3 getPosition();
 	void setRotation(D3DXVECTOR3 r);
 	D3DXVECTOR3 getRotation();
 	void setScale(D3DXVECTOR3 s);
-	D3DXVECTOR3 getScale();
+	D3DXVECTOR3 getScale();*/
 
 	D3DXVECTOR3 position = { 0.0f,0.0f,0.0f };
 	D3DXVECTOR3 rotation = { 0.0f,0.0f,0.0f };

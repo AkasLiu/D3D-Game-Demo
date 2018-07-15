@@ -12,7 +12,7 @@ public:
 public:
 	void init();
 	void draw();
-	void setMaterial(D3DMATERIAL9 mtrl);
+	//void setMaterial(D3DMATERIAL9 mtrl);
 
 private:
 	D3DXVECTOR3 size = { 1.0f,1.0f,1.0f };
