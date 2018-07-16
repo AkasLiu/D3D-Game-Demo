@@ -1,7 +1,7 @@
 #include "character.h"
 
 Character::Character(Transform tf, LPDIRECT3DDEVICE9 pDevice) :
-	GameObject(tf,pDevice)
+	GameObject(tf, pDevice)
 {
 }
 
@@ -10,8 +10,8 @@ Character::~Character()
 }
 
 void Character::init()
-{
-	boundingBox.ComputeBoundingBox(pMesh);
+{	
+	boundingBox.ComputeBoundingBox(pMesh, &transform.position);
 	boundingBox.initBoudingBox(pDevice);
 }
 

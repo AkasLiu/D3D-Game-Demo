@@ -122,6 +122,7 @@ void Camera::walk(float units, Character* player)
 			static D3DXVECTOR3 playerPosition;
 			playerPosition = player->getTransform()->position;
 			playerPosition += D3DXVECTOR3(_look.x, 0.0f, _look.z) * units*10;
+			player->getBoundingBox()->boudingBoxMove(D3DXVECTOR3(_look.x, 0.0f, _look.z) * units);
 			player->getTransform()->position = playerPosition;
 		}
 	}

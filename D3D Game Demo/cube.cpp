@@ -23,7 +23,9 @@ Cube::~Cube()
 
 void Cube::init()
 {
-	D3DXCreateBox(pDevice, size.x, size.y, size.z, &pMesh, NULL);
+	D3DXCreateBox(pDevice, size.x, size.y, size.z, &pMesh, NULL);	
+	boundingBox.ComputeBoundingBox(pMesh, &transform.position);
+	boundingBox.initBoudingBox(pDevice);
 }
 
 void Cube::draw()
@@ -34,6 +36,10 @@ void Cube::draw()
 	pMesh->DrawSubset(0);
 
 	pDevice->SetMaterial(&d3d::WHITE_MTRL);
+
+	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	boundingBox.getBoxMesh()->DrawSubset(0);
+	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 }
 
 //void Cube::setMaterial(D3DMATERIAL9 mtrl)

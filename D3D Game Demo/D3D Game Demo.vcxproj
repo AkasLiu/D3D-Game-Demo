@@ -156,8 +156,9 @@
     <ClInclude Include="gameFrame.h" />
     <ClInclude Include="gameObject.h" />
     <ClInclude Include="plane.h" />
-    <ClInclude Include="player.h" />
+    <ClInclude Include="pSystem.h" />
     <ClInclude Include="skyBox.h" />
+    <ClInclude Include="terrain.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="vertex.h" />
   </ItemGroup>
@@ -173,8 +174,9 @@
     <ClCompile Include="gameObject.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="plane.cpp" />
-    <ClCompile Include="player.cpp" />
+    <ClCompile Include="pSystem.cpp" />
     <ClCompile Include="skyBox.cpp" />
+    <ClCompile Include="terrain.cpp" />
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="vertex.cpp" />
   </ItemGroup>

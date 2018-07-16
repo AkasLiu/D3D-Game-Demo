@@ -78,4 +78,21 @@ namespace d3d
 	const D3DMATERIAL9 YELLOW_MTRL = InitMtrl(YELLOW, YELLOW, YELLOW, BLACK, 2.0f);
 	const D3DMATERIAL9 GRAY_MTRL = InitMtrl(GRAY, GRAY, GRAY, BLACK, 2.0f);
 
+	float Lerp(float a, float b, float t);
+
+	// Desc: Return random float in [lowBound, highBound] interval.
+	float GetRandomFloat(float lowBound, float highBound);
+
+
+	// Desc: Returns a random vector in the bounds specified by min and max.
+	void GetRandomVector(
+		D3DXVECTOR3* out,
+		D3DXVECTOR3* min,
+		D3DXVECTOR3* max);
+
+	//
+	// Conversion
+	//
+	DWORD FtoDw(float f);
+
 }

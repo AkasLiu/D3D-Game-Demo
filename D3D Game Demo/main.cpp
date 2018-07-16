@@ -8,6 +8,9 @@
 #include "font.h"
 #include "skyBox.h"
 #include "character.h"
+#include "terrain.h"
+#include "pSystem.h"
+#include <ctime>
 
 //-----------------------------------【宏定义部分】--------------------------------------------
 //	描述：定义一些辅助宏
@@ -27,6 +30,7 @@
 ID3DXFont*								g_pFont = NULL;    //字体COM接口
 float											g_FPS = 0.0f;       //一个浮点型的变量，代表帧速率
 wchar_t										g_strFPS[50];    //包含帧速率的字符数组
+D3DMATRIX									matTest;
 
 LPDIRECT3DDEVICE9							g_pd3dDevice = NULL;		//Direct3D设备对象
 Plane*										floorPlane;					//地面
@@ -35,6 +39,8 @@ Cube*										cube[4];					//边界的围墙
 SkyBox*										skyBox;
 Font*										blackFont;
 Character*									player;
+Terrain*									TheTerrain;
+psys::PSystem*								Sno = 0;
 Camera TheCamera(Camera::LANDOBJECT);
 const DWORD Vertex::FVF = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1;
 
@@ -299,7 +305,24 @@ HRESULT Objects_Init(HWND hwnd)
 	cubeTest->InitCube();
 	TheCamera.SetTargetPosition(&cubePos);*/
 
-	
+	//
+	//初始化地形
+	//
+	D3DXVECTOR3 lightDirection(0.0f, 1.0f, 0.0f);
+	TheTerrain = new Terrain(g_pd3dDevice, L"Terrain\\coastMountain64.raw", 64, 64, 5, 0.5f);
+	TheTerrain->genTexture(&lightDirection);
+
+	// seed random number generator
+	srand((unsigned int)time(0));
+
+	//
+	// Create Snow System.
+	//
+	BoundingBox boundingBox;
+	*boundingBox.getBoudingBoxMin() = D3DXVECTOR3(-50.0f, 0.0f, -50.0f);
+	*boundingBox.getBoudingBoxMax() = D3DXVECTOR3(50.0f, 150.0f, 50.0f);
+	Sno = new psys::Snow(&boundingBox, 5000);
+	Sno->init(g_pd3dDevice, "snowflake.dds");
 
 	//
 	// 设置投影矩阵
@@ -320,40 +343,160 @@ HRESULT Objects_Init(HWND hwnd)
 //-----------------------------------【Direct3D_Update( )函数】--------------------------------
 //	描述：不是即时渲染代码但是需要即时调用的，如按键后的坐标的更改，都放在这里
 //--------------------------------------------------------------------------------------------------
-void Direct3D_Update(HWND hwnd,float deltaTime)
+void Direct3D_Update(HWND hwnd, float deltaTime)
 {
 	//使用DirectInput类读取数据
 	g_pDInput->GetInput();
 
+	//碰撞检测失败。。。。。
+
 	// 沿摄像机各分量移动视角
-	if (g_pDInput->IsKeyDown(DIK_A))  TheCamera.strafe(-200.0f*deltaTime,player);
-	if (g_pDInput->IsKeyDown(DIK_D))  TheCamera.strafe(200.0f*deltaTime,player);
-	if (g_pDInput->IsKeyDown(DIK_W))  TheCamera.walk(200.0f*deltaTime,player);
-	if (g_pDInput->IsKeyDown(DIK_S))  TheCamera.walk(-200.0f*deltaTime,player);
-	if (g_pDInput->IsKeyDown(DIK_R))  TheCamera.fly(10.0f*deltaTime);
-	if (g_pDInput->IsKeyDown(DIK_F))  TheCamera.fly(-10.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_A))
+	{
+		//计算移动的距离
+		/*D3DXVECTOR3 cameraRightVec;
+		TheCamera.getRight(&cameraRightVec);
+		static D3DXVECTOR3 dist = D3DXVECTOR3(cameraRightVec.x, 0.0f, cameraRightVec.z) * (-20.0f)*deltaTime;
+		BoundingBox *collision = player->getBoundingBox();
+		BoundingBox collisionCopy = *collision;
+		collisionCopy.boudingBoxMove(dist);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			if (collisionCopy.isCollided(cube[i]->getBoundingBox()))
+			{
+				player->getBoundingBox()->boudingBoxMove(dist);
+				break;
+			}
+			else
+			{
+				TheCamera.strafe(-20.0f*deltaTime, player);
+			}
+		}*/
+		TheCamera.strafe(-200.0f*deltaTime);
+	}
+
+	if (g_pDInput->IsKeyDown(DIK_D))
+	{
+		//计算移动的距离
+		/*D3DXVECTOR3 cameraRightVec;
+		TheCamera.getRight(&cameraRightVec);
+		static D3DXVECTOR3 dist = D3DXVECTOR3(cameraRightVec.x, 0.0f, cameraRightVec.z) * 20.0f*deltaTime;
+		BoundingBox *collision = player->getBoundingBox();
+		BoundingBox collisionCopy = *collision;
+		collisionCopy.boudingBoxMove(dist);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			if (collisionCopy.isCollided(cube[i]->getBoundingBox()))
+			{
+				player->getBoundingBox()->boudingBoxMove(dist);
+				break;
+			}
+			else
+			{
+				TheCamera.strafe(20.0f*deltaTime, player);
+			}
+		}*/
+		TheCamera.strafe(200.0f*deltaTime);
+	}
+
+	if (g_pDInput->IsKeyDown(DIK_W))
+	{
+		//计算移动的距离
+		/*D3DXVECTOR3 cameraLookVec;
+		TheCamera.getLook(&cameraLookVec);
+		static D3DXVECTOR3 dist = D3DXVECTOR3(cameraLookVec.x, 0.0f, cameraLookVec.z) * 20.0f*deltaTime;
+		BoundingBox *collision = player->getBoundingBox();
+		BoundingBox collisionCopy = *collision;
+		collisionCopy.boudingBoxMove(dist);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			if (collisionCopy.isCollided(cube[i]->getBoundingBox()))
+			{
+				player->getBoundingBox()->boudingBoxMove(dist);
+				break;
+			}
+			else
+			{
+				TheCamera.walk(20.0f*deltaTime, player);
+			}
+		}		*/
+		TheCamera.walk(200.0f*deltaTime);
+	}
+
+	if (g_pDInput->IsKeyDown(DIK_S))
+	{
+		//计算移动的距离
+		/*D3DXVECTOR3 cameraLookVec;
+		TheCamera.getLook(&cameraLookVec);
+		static D3DXVECTOR3 dist = D3DXVECTOR3(cameraLookVec.x, 0.0f, cameraLookVec.z) * (-20.0f*deltaTime);
+		BoundingBox *collision = player->getBoundingBox();
+		BoundingBox collisionCopy = *collision;
+		collisionCopy.boudingBoxMove(dist);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			if (collisionCopy.isCollided(cube[i]->getBoundingBox()))
+			{
+				player->getBoundingBox()->boudingBoxMove(dist);
+				break;
+			}
+			else
+			{
+				TheCamera.walk(-20.0f*deltaTime, player);
+			}
+		}*/
+		TheCamera.walk(-200.0f*deltaTime);
+	}
+
+	if (g_pDInput->IsKeyDown(DIK_R))  TheCamera.fly(100.0f*deltaTime);
+	if (g_pDInput->IsKeyDown(DIK_F))  TheCamera.fly(-100.0f*deltaTime);
 
 	//沿摄像机各分量旋转视角
 	if (g_pDInput->IsKeyDown(DIK_LEFT))   TheCamera.yaw(-1.0f*deltaTime);
 	if (g_pDInput->IsKeyDown(DIK_RIGHT))  TheCamera.yaw(1.0f*deltaTime);
 	if (g_pDInput->IsKeyDown(DIK_UP))     TheCamera.pitch(1.0f*deltaTime);
 	if (g_pDInput->IsKeyDown(DIK_DOWN))   TheCamera.pitch(-1.0f*deltaTime);
-		/*if (g_pDInput->IsKeyDown(DIK_Q)) TheCamera->RotationLookVec(0.001f);
-		if (g_pDInput->IsKeyDown(DIK_E)) TheCamera->RotationLookVec(-0.001f);*/
+	/*if (g_pDInput->IsKeyDown(DIK_Q)) TheCamera->RotationLookVec(0.001f);
+	if (g_pDInput->IsKeyDown(DIK_E)) TheCamera->RotationLookVec(-0.001f);*/
 
 	//自己加一个键
 	if (g_pDInput->IsKeyDown(DIK_I))
 	{
-		/*Transform playerTf;
-		playerTf = player->getTransform();
-		playerTf.position += {0,0,10};
-		player->setTransform(&playerTf);*/
-		//MessageBox(hwnd, _T("失败~！"), _T("浅墨的消息窗口"), 0); //使用MessageBox函数，创建一个消息窗口 
 	}
+	if (g_pDInput->IsKeyDown(DIK_K))
+	{
+	}
+	if (g_pDInput->IsKeyDown(DIK_J))
+	{
+	}
+	if (g_pDInput->IsKeyDown(DIK_L))
+	{
+	}
+
+	//
+	//为了随山地的高度变化而变化
+	//
+	//D3DXVECTOR3 pos;
+	//TheCamera.getCameraPosition(&pos);
+	//if (pos.x <= -150.0f || pos.x >= 150.0f || pos.z <= -150.0f || pos.z >= 150.0f)
+	//{
+	//	pos.y = 10.0f;
+	//}
+	//else
+	//{
+	//	float height = TheTerrain->getHeight(pos.x, pos.z);
+	//	pos.y = height + 5.0f; // add height because we're standing up
+	//}	
+	//TheCamera.setCameraPosition(&pos);
 
 	D3DXMATRIX V;
 	TheCamera.getViewMatrix(&V);
 	g_pd3dDevice->SetTransform(D3DTS_VIEW, &V);
+
+	Sno->update(deltaTime);
 
 	//鼠标控制右向量和上向量的旋转
 	//TheCamera->RotationUpVec(g_pDInput->MouseDX()* 0.001f);
@@ -440,6 +583,26 @@ void Direct3D_Render(HWND hwnd)
 	player->draw();
 
 	//
+	//绘制地形
+	//
+	D3DXMATRIX I;
+	D3DXMatrixIdentity(&I);
+	D3DXMATRIX matTerrain;
+	D3DXMatrixTranslation(&matTerrain, 300.0f, 0.0f, 300.0f);
+	D3DXMATRIX S;
+	D3DXMatrixScaling(&S, 0.4f, 1.0f, 0.4f);
+	matTerrain = matTerrain * S;
+
+	if (TheTerrain)
+		TheTerrain->draw(&I, false);
+
+	//draw snow
+	/*D3DXMATRIX I;
+	D3DXMatrixIdentity(&I);*/
+	g_pd3dDevice->SetTransform(D3DTS_WORLD, &I);
+	Sno->render();
+
+	//
 	//测试
 	//
 	//cube[0]->draw();
@@ -454,6 +617,7 @@ void Direct3D_Render(HWND hwnd)
 //---------------------------------------------------------------------------------------------------
 void Direct3D_CleanUp()
 {
+	d3d::Delete<Terrain*>(TheTerrain);
 	d3d::Delete<Character*>(player);
 	for (int i = 0; i < 4; ++i)
 	{

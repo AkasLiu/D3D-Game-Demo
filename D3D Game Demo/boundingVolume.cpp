@@ -10,6 +10,8 @@ BoundingBox::BoundingBox()
 	_max.x = -INFINITY;
 	_max.y = -INFINITY;
 	_max.z = -INFINITY;
+
+	_pos = { 0,0,0 };
 }
 
 BoundingBox::~BoundingBox()
@@ -32,11 +34,11 @@ bool BoundingBox::isPointInside(D3DXVECTOR3 & p)
 //
 //碰撞检测
 //
-bool BoundingBox::isCollided(BoundingBox collision)
+bool BoundingBox::isCollided(BoundingBox* collision)
 {
-	if (_min.x < collision._max.x && _max.x > collision._min.x &&
-		_min.y < collision._max.y && _max.y > collision._min.y &&
-		_min.z < collision._max.z && _max.z > collision._min.z)
+	if (_min.x <= collision->_max.x && _max.x >= collision->_min.x &&
+		//_min.y <= collision->_max.y && _max.y >= collision->_min.y &&
+		_min.z <= collision->_max.z && _max.z >= collision->_min.z)
 	{
 		return true;
 	}
@@ -45,8 +47,9 @@ bool BoundingBox::isCollided(BoundingBox collision)
 		return false;
 	}
 }
+
 //计算出该物体的外接体
-bool BoundingBox::ComputeBoundingBox(ID3DXMesh * XFileMesh)
+bool BoundingBox::ComputeBoundingBox(ID3DXMesh * XFileMesh, const D3DXVECTOR3 * p)
 {
 	HRESULT hr = 0;
 
@@ -65,6 +68,10 @@ bool BoundingBox::ComputeBoundingBox(ID3DXMesh * XFileMesh)
 	if (FAILED(hr))
 		return false;
 
+	_pos = *p;
+	_min += _pos;
+	_max += _pos;
+
 	return true;
 }
 
@@ -82,4 +89,22 @@ void BoundingBox::initBoudingBox(LPDIRECT3DDEVICE9 pDevice)
 LPD3DXMESH BoundingBox::getBoxMesh()
 {
 	return pBoxMesh;
+}
+
+//即时修改BoudingBox的_min和_max
+void BoundingBox::boudingBoxMove(D3DXVECTOR3 vec)
+{
+	_min += vec;
+	_max += vec;
+	_pos += vec;
+}
+
+D3DXVECTOR3* BoundingBox::getBoudingBoxMin()
+{
+	return &_min;
+}
+
+D3DXVECTOR3* BoundingBox::getBoudingBoxMax()
+{
+	return &_max;
 }

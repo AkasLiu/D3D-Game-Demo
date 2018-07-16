@@ -65,3 +65,35 @@ D3DLIGHT9 d3d::InitSpotLight(D3DXVECTOR3* position, D3DXVECTOR3* direction, D3DX
 
 	return light;
 }
+
+float d3d::Lerp(float a, float b, float t)
+{
+	return a - (a*t) + (b*t);
+}
+
+DWORD d3d::FtoDw(float f)
+{
+	return *((DWORD*)&f);
+}
+
+float d3d::GetRandomFloat(float lowBound, float highBound)
+{
+	if (lowBound >= highBound) // bad input
+		return lowBound;
+
+	// get random float in [0, 1] interval
+	float f = (rand() % 10000) * 0.0001f;
+
+	// return float in [lowBound, highBound] interval. 
+	return (f * (highBound - lowBound)) + lowBound;
+}
+
+void d3d::GetRandomVector(
+	D3DXVECTOR3* out,
+	D3DXVECTOR3* min,
+	D3DXVECTOR3* max)
+{
+	out->x = GetRandomFloat(min->x, max->x);
+	out->y = GetRandomFloat(min->y, max->y);
+	out->z = GetRandomFloat(min->z, max->z);
+}
