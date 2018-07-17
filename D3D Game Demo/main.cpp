@@ -31,7 +31,9 @@ ID3DXFont*								g_pFont = NULL;    //字体COM接口
 float											g_FPS = 0.0f;       //一个浮点型的变量，代表帧速率
 wchar_t										g_strFPS[50];    //包含帧速率的字符数组
 D3DMATRIX									matTest;
-
+Cube* cubeTest;
+ID3DXEffect* FogEffect = 0;
+D3DXHANDLE FogTechHandle = 0;
 LPDIRECT3DDEVICE9							g_pd3dDevice = NULL;		//Direct3D设备对象
 Plane*										floorPlane;					//地面
 DInputClass*								g_pDInput = NULL;			//一个DInputClass类的指针
@@ -280,11 +282,11 @@ HRESULT Objects_Init(HWND hwnd)
 	//
 	//Test cube
 	//
-	/*D3DXVECTOR3 cubepos = { 0,0,0 };
-	D3DXVECTOR3 szie = { 100,100,100 };
-	cube[0] = new Cube(cubepos, szie, g_pd3dDevice);
-	cube[0]->setMaterial(d3d::GRAY_MTRL);
-	cube[0]->init();*/
+	D3DXVECTOR3 cubepos = { 0,0,0 };
+	D3DXVECTOR3 szie = { 500,500,500 };
+	 cubeTest= new Cube(cubepos, szie, g_pd3dDevice);
+	 cubeTest->setMaterial(d3d::GRAY_MTRL);
+	 cubeTest->init();
 
 	//
 	//载入X文件，作为主角
@@ -323,6 +325,39 @@ HRESULT Objects_Init(HWND hwnd)
 	*boundingBox.getBoudingBoxMax() = D3DXVECTOR3(50.0f, 150.0f, 50.0f);
 	Sno = new psys::Snow(&boundingBox, 5000);
 	Sno->init(g_pd3dDevice, "snowflake.dds");
+
+	//
+	//创建雾化效果
+	//
+	ID3DXBuffer* errorBuffer = 0;
+	HRESULT hr = D3DXCreateEffectFromFile(
+		g_pd3dDevice,
+		L"fog.txt",
+		0,                // no preprocessor definitions
+		0,                // no ID3DXInclude interface
+		D3DXSHADER_DEBUG, // compile flags
+		0,                // don't share parameters
+		&FogEffect,
+		&errorBuffer);
+
+	// output any error messages
+	if (errorBuffer)
+	{
+		::MessageBox(0, (LPCWSTR)errorBuffer->GetBufferPointer(), 0, 0);
+		d3d::Release<ID3DXBuffer*>(errorBuffer);
+	}
+
+	if (FAILED(hr))
+	{
+		::MessageBox(0, L"D3DXCreateEffectFromFile() - FAILED", 0, 0);
+		return false;
+	}
+
+	// 
+	// Save Frequently Accessed Parameter Handles
+	//
+
+	FogTechHandle = FogEffect->GetTechniqueByName("Fog");
 
 	//
 	// 设置投影矩阵
@@ -479,18 +514,18 @@ void Direct3D_Update(HWND hwnd, float deltaTime)
 	//
 	//为了随山地的高度变化而变化
 	//
-	//D3DXVECTOR3 pos;
-	//TheCamera.getCameraPosition(&pos);
-	//if (pos.x <= -150.0f || pos.x >= 150.0f || pos.z <= -150.0f || pos.z >= 150.0f)
-	//{
-	//	pos.y = 10.0f;
-	//}
-	//else
-	//{
-	//	float height = TheTerrain->getHeight(pos.x, pos.z);
-	//	pos.y = height + 5.0f; // add height because we're standing up
-	//}	
-	//TheCamera.setCameraPosition(&pos);
+	D3DXVECTOR3 pos;
+	TheCamera.getCameraPosition(&pos);
+	if (pos.x <= -150.0f || pos.x >= 150.0f || pos.z <= -150.0f || pos.z >= 150.0f)
+	{
+		pos.y = 10.0f;
+	}
+	else
+	{
+		float height = TheTerrain->getHeight(pos.x, pos.z);
+		pos.y = height + 5.0f; // add height because we're standing up
+	}	
+	TheCamera.setCameraPosition(&pos);
 
 	D3DXMATRIX V;
 	TheCamera.getViewMatrix(&V);
@@ -593,14 +628,38 @@ void Direct3D_Render(HWND hwnd)
 	D3DXMatrixScaling(&S, 0.4f, 1.0f, 0.4f);
 	matTerrain = matTerrain * S;
 
-	if (TheTerrain)
-		TheTerrain->draw(&I, false);
+	/*if (TheTerrain)
+		TheTerrain->draw(&I, false);*/
 
+	//
 	//draw snow
+	//
 	/*D3DXMATRIX I;
 	D3DXMatrixIdentity(&I);*/
 	g_pd3dDevice->SetTransform(D3DTS_WORLD, &I);
 	Sno->render();
+
+	//
+	//绘制雾化效果
+	//
+	// set the technique to use
+	FogEffect->SetTechnique(FogTechHandle);
+
+	UINT numPasses = 0;
+	FogEffect->Begin(&numPasses, 0);
+
+	/*D3DXMATRIX I;
+	D3DXMatrixIdentity(&I);*/
+	for (int i = 0; i < numPasses; i++)
+	{
+		FogEffect->BeginPass(i);
+
+		if (TheTerrain)
+			TheTerrain->draw(&I, false);
+
+		FogEffect->EndPass();
+	}
+	FogEffect->End();
 
 	//
 	//测试

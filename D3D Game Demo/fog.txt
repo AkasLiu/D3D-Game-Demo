@@ -1,0 +1,35 @@
+////////////////////////////////////////////////////////////////////////////
+// 
+// File: fog.txt
+//          
+////////////////////////////////////////////////////////////////////////////
+
+// 
+// Effect
+//
+
+technique Fog
+{
+    pass P0
+    {
+        //
+        // Set Misc render states.
+
+        pixelshader      = null;
+        vertexshader     = null;
+        fvf              = XYZ | Normal;
+        Lighting         = true;
+        NormalizeNormals = true;
+        SpecularEnable   = false;
+
+        //
+        // Fog States
+
+        FogVertexMode = LINEAR; // linear fog function
+        FogStart      = 10.0f;  // fog starts 50 units away from viewpoint
+        FogEnd        = 100.0f; // fog ends 300 units away from viewpoint
+
+        FogColor      = 0x00CCCCCC; // gray
+        FogEnable     = true;       // enable
+    }
+}
